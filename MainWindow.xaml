@@ -1,0 +1,604 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Window
+    x:Class="WinDirectoryStats.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:WinDirectoryStats.Controls"
+    xmlns:models="using:WinDirectoryStats.Models"
+    Title="WinDirectoryStats">
+
+    <Grid x:Name="RootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border
+            Grid.Row="0"
+            Padding="12,9"
+            BorderBrush="{StaticResource PanelBorderBrush}"
+            BorderThickness="0,0,0,1">
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="18" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <ComboBox
+                    x:Name="DriveCombo"
+                    Grid.Column="0"
+                    Width="340"
+                    VerticalAlignment="Center"
+                    DisplayMemberPath="DisplayName"
+                    PlaceholderText="Select a location" />
+                <HyperlinkButton
+                    x:Name="BrowseFolderButton"
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Click="ScanFolder_Click"
+                    Content="Browse folder" />
+                <Button
+                    x:Name="StartScanButton"
+                    Grid.Column="2"
+                    Height="40"
+                    MinWidth="124"
+                    Padding="20,0"
+                    VerticalAlignment="Center"
+                    Click="ScanDrive_Click"
+                    Content="Start scan"
+                    Style="{StaticResource AccentButtonStyle}" />
+                <StackPanel
+                    Grid.Column="3"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="6"
+                    ToolTipService.ToolTip="Maximum subfolder depth. The selected root is depth 0.">
+                    <TextBlock VerticalAlignment="Center" Text="Depth" />
+                    <Button
+                        x:Name="DepthDecreaseButton"
+                        Width="32"
+                        Height="32"
+                        Padding="0"
+                        Click="DepthDecrease_Click"
+                        Content="−" />
+                    <TextBlock
+                        x:Name="DepthText"
+                        Width="28"
+                        VerticalAlignment="Center"
+                        Text="6"
+                        TextAlignment="Center" />
+                    <Button
+                        x:Name="DepthIncreaseButton"
+                        Width="32"
+                        Height="32"
+                        Padding="0"
+                        Click="DepthIncrease_Click"
+                        Content="+" />
+                </StackPanel>
+                <Button
+                    x:Name="RescanButton"
+                    Grid.Column="4"
+                    Click="Rescan_Click"
+                    Content="Rescan"
+                    IsEnabled="False" />
+
+                <Button
+                    x:Name="UpButton"
+                    Grid.Column="6"
+                    Click="Up_Click"
+                    IsEnabled="False"
+                    ToolTipService.ToolTip="Select parent folder">
+                    <FontIcon FontSize="16" Glyph="&#xE74A;" />
+                </Button>
+                <Button
+                    x:Name="CancelButton"
+                    Grid.Column="7"
+                    Height="40"
+                    MinWidth="112"
+                    Padding="20,0"
+                    Click="Cancel_Click"
+                    Content="Stop scan"
+                    IsEnabled="False"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Visibility="Collapsed" />
+                <Button
+                    x:Name="ErrorsButton"
+                    Grid.Column="8"
+                    Click="Errors_Click"
+                    Content="Scan warnings"
+                    Visibility="Collapsed" />
+            </Grid>
+        </Border>
+
+        <ProgressBar
+            x:Name="ScanProgressBar"
+            Grid.Row="1"
+            Height="3"
+            IsIndeterminate="True"
+            Visibility="Collapsed" />
+
+        <Border
+            Grid.Row="2"
+            Margin="12,10,12,8"
+            Padding="12,9"
+            Background="{StaticResource SubtlePanelBrush}"
+            CornerRadius="6">
+            <Grid ColumnSpacing="22">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Spacing="2">
+                    <TextBlock
+                        x:Name="SelectedNameText"
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Text="Choose a drive or folder to begin"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        x:Name="SelectedPathText"
+                        FontSize="12"
+                        Opacity="0.68"
+                        TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" MinWidth="100">
+                    <TextBlock
+                        FontSize="11"
+                        Opacity="0.58"
+                        Text="SIZE" />
+                    <TextBlock
+                        x:Name="SelectedSizeText"
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="—" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" MinWidth="100">
+                    <TextBlock
+                        FontSize="11"
+                        Opacity="0.58"
+                        Text="FILES" />
+                    <TextBlock
+                        x:Name="SelectedFilesText"
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="—" />
+                </StackPanel>
+                <StackPanel Grid.Column="3" MinWidth="100">
+                    <TextBlock
+                        FontSize="11"
+                        Opacity="0.58"
+                        Text="FOLDERS" />
+                    <TextBlock
+                        x:Name="SelectedFoldersText"
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="—" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="3" Margin="12,0,12,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition
+                    x:Name="DetailsColumn"
+                    Width="2*"
+                    MinWidth="320" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition
+                    x:Name="TreemapColumn"
+                    Width="3*"
+                    MinWidth="320" />
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0" RowSpacing="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="3*" MinHeight="250" />
+                    <RowDefinition Height="2*" MinHeight="180" />
+                </Grid.RowDefinitions>
+
+                <Border
+                    Grid.Row="0"
+                    BorderBrush="{StaticResource PanelBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                    <Pivot x:Name="ResultsTabView">
+                        <PivotItem x:Name="FoldersTab">
+                            <PivotItem.Header>
+                                <TextBlock FontSize="16" Text="📁 Folders" />
+                            </PivotItem.Header>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="34" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Grid
+                                    Grid.Row="0"
+                                    Padding="38,0,12,0"
+                                    Background="{StaticResource SubtlePanelBrush}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="90" />
+                                        <ColumnDefinition Width="70" />
+                                        <ColumnDefinition Width="110" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        Grid.Column="0"
+                                        VerticalAlignment="Center"
+                                        Opacity="0.68"
+                                        Text="Name" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Opacity="0.68"
+                                        Text="Size" />
+                                    <TextBlock
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        Opacity="0.68"
+                                        Text="Percent" />
+                                    <TextBlock
+                                        Grid.Column="3"
+                                        VerticalAlignment="Center"
+                                        Opacity="0.68"
+                                        Text="Items" />
+                                </Grid>
+                                <TreeView
+                                    x:Name="DirectoryTree"
+                                    Grid.Row="1"
+                                    Expanding="DirectoryTree_Expanding"
+                                    SelectionChanged="DirectoryTree_SelectionChanged"
+                                    SelectionMode="Single">
+                                    <TreeView.ItemContainerStyle>
+                                        <Style TargetType="TreeViewItem">
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                            <Setter Property="MinWidth" Value="0" />
+                                        </Style>
+                                    </TreeView.ItemContainerStyle>
+                                    <TreeView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid
+                                                Height="32"
+                                                MinWidth="0"
+                                                Padding="0,0,8,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="90" />
+                                                    <ColumnDefinition Width="70" />
+                                                    <ColumnDefinition Width="110" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel
+                                                    Grid.Column="0"
+                                                    VerticalAlignment="Center"
+                                                    Orientation="Horizontal"
+                                                    Spacing="7">
+                                                    <FontIcon FontSize="14" Glyph="&#xE8B7;" />
+                                                    <TextBlock Text="{Binding Content.Name}" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding Content.SizeText}" />
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding Content.PercentageText, Mode=OneWay}" />
+                                                <TextBlock
+                                                    Grid.Column="3"
+                                                    VerticalAlignment="Center"
+                                                    Opacity="0.72"
+                                                    Text="{Binding Content.ItemCountText}"
+                                                    TextTrimming="CharacterEllipsis" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </TreeView.ItemTemplate>
+                                </TreeView>
+                            </Grid>
+                        </PivotItem>
+
+                        <PivotItem x:Name="LargestFilesTab">
+                            <PivotItem.Header>
+                                <TextBlock FontSize="16" Text="🗄️ Largest files" />
+                            </PivotItem.Header>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="34" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <TextBox
+                                    x:Name="FileFilterBox"
+                                    Grid.Row="0"
+                                    Margin="8"
+                                    PlaceholderText="Filter by file name, path, or extension"
+                                    TextChanged="FileFilterBox_TextChanged" />
+                                <Grid
+                                    Grid.Row="1"
+                                    Padding="12,0"
+                                    Background="{StaticResource SubtlePanelBrush}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="90" />
+                                        <ColumnDefinition Width="150" />
+                                    </Grid.ColumnDefinitions>
+                                    <Button
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Left"
+                                        Background="Transparent"
+                                        Click="SortFiles_Click"
+                                        Content="Name / path"
+                                        Tag="Name" />
+                                    <Button
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Left"
+                                        Background="Transparent"
+                                        Click="SortFiles_Click"
+                                        Content="Size"
+                                        Tag="Size" />
+                                    <TextBlock
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        Opacity="0.68"
+                                        Text="Percent" />
+                                    <Button
+                                        Grid.Column="3"
+                                        HorizontalAlignment="Left"
+                                        Background="Transparent"
+                                        Click="SortFiles_Click"
+                                        Content="Modified"
+                                        Tag="Modified" />
+                                </Grid>
+                                <ListView
+                                    x:Name="FilesList"
+                                    Grid.Row="2"
+                                    DoubleTapped="FilesList_DoubleTapped"
+                                    ItemsSource="{x:Bind LargestFiles}"
+                                    SelectionChanged="FilesList_SelectionChanged">
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="ListViewItem">
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                            <Setter Property="Padding" Value="12,4" />
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate x:DataType="models:DiskItem">
+                                            <Grid MinWidth="620" ColumnSpacing="8">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="112" />
+                                                    <ColumnDefinition Width="82" />
+                                                    <ColumnDefinition Width="142" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        Opacity="0.58"
+                                                        Text="{x:Bind FullPath}"
+                                                        TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    VerticalAlignment="Center"
+                                                    Text="{x:Bind SizeText}" />
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    VerticalAlignment="Center"
+                                                    Text="{x:Bind PercentageText, Mode=OneWay}" />
+                                                <TextBlock
+                                                    Grid.Column="3"
+                                                    VerticalAlignment="Center"
+                                                    Opacity="0.72"
+                                                    Text="{x:Bind ModifiedText}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                    <ListView.ContextFlyout>
+                                        <MenuFlyout>
+                                            <MenuFlyoutItem Click="OpenSelected_Click" Text="Open" />
+                                            <MenuFlyoutItem Click="RevealSelected_Click" Text="Show in Explorer" />
+                                            <MenuFlyoutItem Click="CopySelected_Click" Text="Copy path" />
+                                            <MenuFlyoutSeparator />
+                                            <MenuFlyoutItem Click="RecycleSelected_Click" Text="Move to Recycle Bin…" />
+                                        </MenuFlyout>
+                                    </ListView.ContextFlyout>
+                                </ListView>
+                            </Grid>
+                        </PivotItem>
+                    </Pivot>
+                </Border>
+
+                <Border
+                    Grid.Row="1"
+                    BorderBrush="{StaticResource PanelBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="42" />
+                            <RowDefinition Height="34" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            Margin="12,0"
+                            VerticalAlignment="Center"
+                            FontSize="15"
+                            FontWeight="SemiBold"
+                            Text="File extensions" />
+                        <Grid
+                            Grid.Row="1"
+                            Padding="12,0"
+                            Background="{StaticResource SubtlePanelBrush}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="90" />
+                                <ColumnDefinition Width="70" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Opacity="0.68"
+                                Text="Extension" />
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Opacity="0.68"
+                                Text="Size" />
+                            <TextBlock
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Opacity="0.68"
+                                Text="Files" />
+                        </Grid>
+                        <ListView
+                            x:Name="ExtensionsList"
+                            Grid.Row="2"
+                            ItemsSource="{x:Bind ExtensionStats}"
+                            SelectionChanged="ExtensionsList_SelectionChanged">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="Padding" Value="12,5" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:ExtensionStat">
+                                    <Grid MinWidth="270" ColumnSpacing="7">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="84" />
+                                            <ColumnDefinition Width="62" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Spacing="3">
+                                            <StackPanel Orientation="Horizontal" Spacing="7">
+                                                <Rectangle
+                                                    Width="12"
+                                                    Height="12"
+                                                    Fill="{x:Bind ColorBrush}"
+                                                    RadiusX="2"
+                                                    RadiusY="2" />
+                                                <TextBlock Text="{x:Bind Extension}" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock
+                                                    FontSize="11"
+                                                    Opacity="0.58"
+                                                    Text="{x:Bind PercentageText}" />
+                                            </StackPanel>
+                                            <ProgressBar
+                                                Height="2"
+                                                Maximum="100"
+                                                Value="{x:Bind Percentage}" />
+                                        </StackPanel>
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Text="{x:Bind SizeText}" />
+                                        <TextBlock
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Text="{x:Bind FileCountText}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <Thumb
+                Grid.Column="1"
+                DragDelta="ResultsSplitter_DragDelta"
+                ToolTipService.ToolTip="Drag to resize the lists and treemap">
+                <Thumb.Template>
+                    <ControlTemplate TargetType="Thumb">
+                        <Grid Background="Transparent">
+                            <Border
+                                Width="3"
+                                HorizontalAlignment="Center"
+                                Background="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+                                CornerRadius="2" />
+                        </Grid>
+                    </ControlTemplate>
+                </Thumb.Template>
+            </Thumb>
+
+            <Border
+                Grid.Column="2"
+                BorderBrush="{StaticResource PanelBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="6">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="38" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid
+                        Grid.Row="0"
+                        Padding="12,0"
+                        Background="{StaticResource SubtlePanelBrush}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Text="Treemap" />
+                        <TextBlock
+                            x:Name="TreemapHintText"
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            FontSize="12"
+                            Opacity="0.62"
+                            Text="Area = file size · Color = extension" />
+                    </Grid>
+                    <Grid Grid.Row="1" Background="#15181D">
+                        <controls:TreemapPanel x:Name="Treemap" ItemInvoked="Treemap_ItemInvoked" />
+                        <TextBlock
+                            x:Name="TreemapEmptyText"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="White"
+                            Opacity="0.68"
+                            Text="Scan a location to build the treemap" />
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Border
+            Grid.Row="4"
+            Padding="12,7"
+            BorderBrush="{StaticResource PanelBorderBrush}"
+            BorderThickness="0,1,0,0">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    x:Name="StatusText"
+                    Text="Ready"
+                    TextTrimming="CharacterEllipsis" />
+                <TextBlock
+                    x:Name="SummaryText"
+                    Grid.Column="1"
+                    Opacity="0.68" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
